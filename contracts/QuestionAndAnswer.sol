@@ -5,6 +5,7 @@ import "hardhat/console.sol";
 
 // TODO: error QuestionAndAnswer__QuestionTooLong();
 error QuestionAndAnswer__BountyTooLow();
+error QuestionAndAnswer__InvalidPriceMinimum();
 
 contract QuestionAndAnswer {
     event QuestionAsked(
@@ -31,8 +32,9 @@ contract QuestionAndAnswer {
     );
 
     struct AnswererSettings {
-        uint256 priceMinimum;
-        // uint256 questionCharacterLength;
+        bool populated;
+        int256 priceMinimum;
+        // TODO: uint256 questionCharacterLength;
         // TODO: acceptable categories
     }
     struct QuestionAnswerDetails {
@@ -49,17 +51,27 @@ contract QuestionAndAnswer {
     function askQuestion(
         string calldata question,
         address answerer,
-        uint256 bounty
+        int256 bounty
     ) public {
         AnswererSettings memory answererSettings = answererToSettings[answerer];
-        console.log("Hello: ", answererSettings.priceMinimum);
-        // bool(bounty < answererSettings.priceMinimum)
-        // if (answererSettings) {
-        //     revert QuestionAndAnswer__BountyTooLow();
-        // }
+
+        if (
+            answererSettings.populated && bounty < answererSettings.priceMinimum
+        ) {
+            revert QuestionAndAnswer__BountyTooLow();
+        }
     }
 
-    function test() public pure returns (uint256) {
-        return 1;
+    // Priced in native currency (MATIC).
+    function setAnswererSettings(int256 priceMinimum) public {
+        if (priceMinimum <= 0) {
+            revert QuestionAndAnswer__InvalidPriceMinimum();
+        }
+
+        AnswererSettings memory senderAnswererSettings = AnswererSettings({
+            populated: true,
+            priceMinimum: priceMinimum
+        });
+        answererToSettings[msg.sender] = senderAnswererSettings;
     }
 }
