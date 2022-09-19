@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 error QuestionAndAnswer__BountyTooLow();
 error QuestionAndAnswer__InvalidPriceMinimum();
 error QuestionAndAnswer__AllowanceTooLow();
+error QuestionAndAnswer__QuestionDoesNotExist();
 
 contract QuestionAndAnswer {
     event QuestionAsked(
@@ -77,23 +78,43 @@ contract QuestionAndAnswer {
             ][answerer];
         QuestionAnswerDetails
             memory newQuestionAnswerDetails = QuestionAnswerDetails({
-                question: "",
+                question: question,
                 answer: "",
                 id: 0
             });
-        if (questionAnswerDetails.length == 0) {
-            newQuestionAnswerDetails.question = question;
-            newQuestionAnswerDetails.answer = "";
-            newQuestionAnswerDetails.id = 1;
-
-            questionerToAnswererToQAs[msg.sender][answerer].push(
-                newQuestionAnswerDetails
-            );
+        if (questionAnswerDetails.length != 0) {
+            newQuestionAnswerDetails.id =
+                questionAnswerDetails[questionAnswerDetails.length - 1].id +
+                1;
         }
-        console.log(
-            "length: ",
-            questionerToAnswererToQAs[msg.sender][answerer].length
+        questionerToAnswererToQAs[msg.sender][answerer].push(
+            newQuestionAnswerDetails
         );
+
+        emit QuestionAsked(
+            msg.sender,
+            answerer,
+            newQuestionAnswerDetails.id,
+            bounty
+        );
+    }
+
+    function answerQuestion(
+        address questioner,
+        uint256 questionId,
+        string calldata answer
+    ) public {
+        QuestionAnswerDetails[]
+            storage allQuestionAnswerDetails = questionerToAnswererToQAs[
+                questioner
+            ][msg.sender];
+        if (allQuestionAnswerDetails.length <= questionId) {
+            revert QuestionAndAnswer__QuestionDoesNotExist();
+        }
+        // questionerToAnswererToQAs[
+        //     questioner
+        // ][msg.sender]
+        allQuestionAnswerDetails[questionId].answer = answer;
     }
 
     // Priced in native currency (MATIC).

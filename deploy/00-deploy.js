@@ -68,6 +68,11 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     sampleAddress,
     sampleBounty
   );
+  await QuestionAndAnswerContract.connect(player2Signer).askQuestion(
+    sampleQuestion,
+    sampleAddress,
+    sampleBounty
+  );
 
   await printUSDCBalances(ExampleERC20Contract, [
     questionAndAnswer.address,
@@ -76,11 +81,23 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     player2,
   ]);
 
-  // await QuestionAndAnswerContract.connect(player2Signer).printQuestionerToAnswererToQAs(
-  //   player2,
-  //   player1,
-  //   0
-  // );
+  await QuestionAndAnswerContract.connect(player1Signer).answerQuestion(
+    player2,
+    1,
+    'testing testing testing'
+  );
+
+  await QuestionAndAnswerContract.connect(player1Signer).printQuestionerToAnswererToQAs(
+    player2,
+    player1,
+    0
+  );
+
+  await QuestionAndAnswerContract.connect(player1Signer).printQuestionerToAnswererToQAs(
+    player2,
+    player1,
+    1
+  );
 
   log('----------------------------------------------------');
   // Verify the deployment
