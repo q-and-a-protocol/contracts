@@ -2,6 +2,12 @@ const { network, ethers } = require('hardhat');
 const { developmentChains, VERIFICATION_BLOCK_CONFIRMATIONS } = require('../helper-hardhat-config');
 const { verify } = require('../utils/verify');
 
+async function printUSDCBalances(ExampleERC20Contract, deployer, player1, player2) {
+  console.log((await ExampleERC20Contract.balanceOf(deployer)).toString());
+  console.log((await ExampleERC20Contract.balanceOf(player1)).toString());
+  console.log((await ExampleERC20Contract.balanceOf(player2)).toString());
+}
+
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments;
   const { deployer, player1, player2 } = await getNamedAccounts();
@@ -56,8 +62,9 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     sampleBounty
   );
 
-  console.log((await ExampleERC20Contract.balanceOf(deployer)).toString());
-  console.log((await ExampleERC20Contract.balanceOf(player1)).toString());
+  await ExampleERC20Contract.connect(player2Signer).myMint();
+
+  await printUSDCBalances(ExampleERC20Contract, deployer, player1, player2);
 
   log('----------------------------------------------------');
   // Verify the deployment
