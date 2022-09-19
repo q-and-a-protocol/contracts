@@ -60,6 +60,8 @@ contract QuestionAndAnswer {
         ) {
             revert QuestionAndAnswer__BountyTooLow();
         }
+
+        // APPROVED FOR CONTRACT TO TAKE MATIC?
     }
 
     // Priced in native currency (MATIC).

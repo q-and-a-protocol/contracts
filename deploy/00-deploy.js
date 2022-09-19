@@ -56,6 +56,9 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     sampleBounty
   );
 
+  console.log((await ExampleERC20Contract.balanceOf(deployer)).toString());
+  console.log((await ExampleERC20Contract.balanceOf(player1)).toString());
+
   log('----------------------------------------------------');
   // Verify the deployment
   if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
