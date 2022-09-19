@@ -76,6 +76,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     player2,
   ]);
 
+  // await QuestionAndAnswerContract.connect(player2Signer).printQuestionerToAnswererToQAs(
+  //   player2,
+  //   player1,
+  //   0
+  // );
+
   log('----------------------------------------------------');
   // Verify the deployment
   if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {

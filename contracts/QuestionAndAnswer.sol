@@ -49,7 +49,7 @@ contract QuestionAndAnswer {
     }
     mapping(address => AnswererSettings) public answererToSettings;
     mapping(address => mapping(address => QuestionAnswerDetails[]))
-        public questionerToAnswererToQAs;
+        private questionerToAnswererToQAs;
 
     // TODO: function withdraw
 
@@ -71,7 +71,29 @@ contract QuestionAndAnswer {
             revert QuestionAndAnswer__AllowanceTooLow();
         }
 
-        console.log("success");
+        QuestionAnswerDetails[]
+            memory questionAnswerDetails = questionerToAnswererToQAs[
+                msg.sender
+            ][answerer];
+        QuestionAnswerDetails
+            memory newQuestionAnswerDetails = QuestionAnswerDetails({
+                question: "",
+                answer: "",
+                id: 0
+            });
+        if (questionAnswerDetails.length == 0) {
+            newQuestionAnswerDetails.question = question;
+            newQuestionAnswerDetails.answer = "";
+            newQuestionAnswerDetails.id = 1;
+
+            questionerToAnswererToQAs[msg.sender][answerer].push(
+                newQuestionAnswerDetails
+            );
+        }
+        console.log(
+            "length: ",
+            questionerToAnswererToQAs[msg.sender][answerer].length
+        );
     }
 
     // Priced in native currency (MATIC).
@@ -85,5 +107,24 @@ contract QuestionAndAnswer {
             priceMinimum: priceMinimum
         });
         answererToSettings[msg.sender] = senderAnswererSettings;
+    }
+
+    function printQuestionerToAnswererToQAs(
+        address questioner,
+        address answerer,
+        uint256 index
+    ) public {
+        console.log(
+            "question: ",
+            questionerToAnswererToQAs[questioner][answerer][index].question
+        );
+        console.log(
+            "answer: ",
+            questionerToAnswererToQAs[questioner][answerer][index].answer
+        );
+        console.log(
+            "id: ",
+            questionerToAnswererToQAs[questioner][answerer][index].id
+        );
     }
 }
