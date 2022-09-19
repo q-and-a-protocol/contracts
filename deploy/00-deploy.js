@@ -11,8 +11,18 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   log('----------------------------------------------------');
 
+  ////////////////////////////////////////////////////////////////////////////
+  ///////////////////////// SET UP CONTRACT, SIGNERS /////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+
   const arguments = [];
-  const nftMarketplace = await deploy('QuestionAndAnswer', {
+  const questionAndAnswer = await deploy('QuestionAndAnswer', {
+    from: deployer,
+    args: arguments,
+    log: true,
+    waitConfirmations: waitBlockConfirmations,
+  });
+  const exampleERC20 = await deploy('ExampleERC20', {
     from: deployer,
     args: arguments,
     log: true,
@@ -20,8 +30,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
 
   const QuestionAndAnswerContract = await ethers.getContract('QuestionAndAnswer');
+  const ExampleERC20Contract = await ethers.getContract('ExampleERC20');
   const player1Signer = await ethers.getSigner(player1);
-  const player2Signer = await ethers.getSigner(player1);
+  const player2Signer = await ethers.getSigner(player2);
+
+  ////////////////////////////////////////////////////////////////////////////
+  /////////// TESTING: answererToSettings(), askQuestion() ///////////////////
+  ////////////////////////////////////////////////////////////////////////////
 
   await QuestionAndAnswerContract.connect(player1Signer).setAnswererSettings(
     ethers.utils.parseUnits('100')
@@ -45,7 +60,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   // Verify the deployment
   if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
     log('Verifying...');
-    await verify(nftMarketplace.address, arguments);
+    await verify(questionAndAnswer.address, arguments);
   }
   log('----------------------------------------------------');
 };
