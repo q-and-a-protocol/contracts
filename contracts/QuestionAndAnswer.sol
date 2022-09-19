@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // TODO: error QuestionAndAnswer__QuestionTooLong();
 error QuestionAndAnswer__BountyTooLow();
 error QuestionAndAnswer__InvalidPriceMinimum();
+error QuestionAndAnswer__AllowanceTooLow();
 
 contract QuestionAndAnswer {
     event QuestionAsked(
@@ -32,9 +33,12 @@ contract QuestionAndAnswer {
         uint256 indexed questionId
     );
 
+    address constant PAYMENT_TOKEN_ADDRESS =
+        0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
+
     struct AnswererSettings {
         bool populated;
-        int256 priceMinimum;
+        uint256 priceMinimum;
         // TODO: uint256 questionCharacterLength;
         // TODO: acceptable categories
     }
@@ -52,7 +56,7 @@ contract QuestionAndAnswer {
     function askQuestion(
         string calldata question,
         address answerer,
-        int256 bounty
+        uint256 bounty
     ) public {
         AnswererSettings memory answererSettings = answererToSettings[answerer];
 
@@ -62,20 +66,16 @@ contract QuestionAndAnswer {
             revert QuestionAndAnswer__BountyTooLow();
         }
 
-        // APPROVED FOR CONTRACT TO TAKE MATIC?
-        IERC20 exampleERC20 = IERC20(
-            0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
-        );
+        IERC20 paymentTokenERC20 = IERC20(PAYMENT_TOKEN_ADDRESS);
+        if (paymentTokenERC20.allowance(msg.sender, address(this)) < bounty) {
+            revert QuestionAndAnswer__AllowanceTooLow();
+        }
 
-        // console.log(
-        //     "allowance of this over msg.sender: ",
-        //     exampleERC20.allowance(msg.sender, address(this))
-        // );
-        exampleERC20.transferFrom(msg.sender, address(this), uint256(bounty));
+        console.log("success");
     }
 
     // Priced in native currency (MATIC).
-    function setAnswererSettings(int256 priceMinimum) public {
+    function setAnswererSettings(uint256 priceMinimum) public {
         if (priceMinimum <= 0) {
             revert QuestionAndAnswer__InvalidPriceMinimum();
         }
