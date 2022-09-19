@@ -4,7 +4,7 @@ const { verify } = require('../utils/verify');
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deploy, log } = deployments;
-  const { deployer, player } = await getNamedAccounts();
+  const { deployer, player1, player2 } = await getNamedAccounts();
   const waitBlockConfirmations = developmentChains.includes(network.name)
     ? 1
     : VERIFICATION_BLOCK_CONFIRMATIONS;
@@ -20,18 +20,26 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
 
   const QuestionAndAnswerContract = await ethers.getContract('QuestionAndAnswer');
-  const playerSigner = await ethers.getSigner(player);
+  const player1Signer = await ethers.getSigner(player1);
+  const player2Signer = await ethers.getSigner(player1);
 
-  setAnswererSettings;
+  await QuestionAndAnswerContract.connect(player1Signer).setAnswererSettings(
+    ethers.utils.parseUnits('100')
+  );
 
-  // const sampleQuestion = 'This is my question!';
-  // const sampleAddress = ethers.utils.getAddress('0x8ba1f109551bd432803012645ac136ddd64dba72');
-  // const sampleBounty = 5000;
-  // await QuestionAndAnswerContract.connect(playerSigner).askQuestion(
-  //   sampleQuestion,
-  //   sampleAddress,
-  //   sampleBounty
-  // );
+  const player1AnswererToSettings = await QuestionAndAnswerContract.connect(
+    player1Signer
+  ).answererToSettings(player1);
+  console.log(`Updated player1AnswererToSettings to: ${player1AnswererToSettings}`);
+
+  const sampleQuestion = 'This is my question!';
+  const sampleAddress = player1;
+  const sampleBounty = ethers.utils.parseUnits('101');
+  await QuestionAndAnswerContract.connect(player2Signer).askQuestion(
+    sampleQuestion,
+    sampleAddress,
+    sampleBounty
+  );
 
   log('----------------------------------------------------');
   // Verify the deployment
