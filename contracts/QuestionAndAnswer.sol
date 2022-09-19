@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // TODO: error QuestionAndAnswer__QuestionTooLong();
 error QuestionAndAnswer__BountyTooLow();
@@ -62,6 +63,15 @@ contract QuestionAndAnswer {
         }
 
         // APPROVED FOR CONTRACT TO TAKE MATIC?
+        IERC20 exampleERC20 = IERC20(
+            0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+        );
+
+        // console.log(
+        //     "allowance of this over msg.sender: ",
+        //     exampleERC20.allowance(msg.sender, address(this))
+        // );
+        exampleERC20.transferFrom(msg.sender, address(this), uint256(bounty));
     }
 
     // Priced in native currency (MATIC).
