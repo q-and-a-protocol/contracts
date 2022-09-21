@@ -35,7 +35,7 @@ contract QuestionAndAnswer {
     );
 
     address constant PAYMENT_TOKEN_ADDRESS =
-        0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
+        0xd77cFfca19aec21aca9F0E38743740EfD548b2A4;
 
     struct AnswererSettings {
         bool populated;
@@ -53,6 +53,10 @@ contract QuestionAndAnswer {
         private questionerToAnswererToQAs;
 
     // TODO: function withdraw
+
+    function version() public pure returns (uint256) {
+        return 0;
+    }
 
     function askQuestion(
         string calldata question,
@@ -130,21 +134,22 @@ contract QuestionAndAnswer {
         answererToSettings[msg.sender] = senderAnswererSettings;
     }
 
-    function printQuestionerToAnswererToQAs(
+    function getQuestionerToAnswererToQAs(
         address questioner,
         address answerer,
         uint256 index
-    ) public {
-        console.log(
-            "question: ",
-            questionerToAnswererToQAs[questioner][answerer][index].question
-        );
-        console.log(
-            "answer: ",
-            questionerToAnswererToQAs[questioner][answerer][index].answer
-        );
-        console.log(
-            "id: ",
+    )
+        public
+        view
+        returns (
+            string memory,
+            string memory,
+            uint256
+        )
+    {
+        return (
+            questionerToAnswererToQAs[questioner][answerer][index].question,
+            questionerToAnswererToQAs[questioner][answerer][index].answer,
             questionerToAnswererToQAs[questioner][answerer][index].id
         );
     }

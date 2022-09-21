@@ -49,9 +49,12 @@ module.exports = {
   },
   etherscan: {
     // npx hardhat verify --network <NETWORK> <CONTRACT_ADDRESS> <CONSTRUCTOR_PARAMETERS>
-    apiKey: {
-      polygon: POLYGONSCAN_API_KEY,
-    },
+    apiKey: POLYGONSCAN_API_KEY,
+    // {
+    //   POLYGONSCAN_API_KEY,
+    //   // polygon: POLYGONSCAN_API_KEY,
+    //   // polygonMumbai: 'your API key',
+    // },
   },
   gasReporter: {
     enabled: REPORT_GAS,

@@ -29,13 +29,15 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log: true,
     waitConfirmations: waitBlockConfirmations,
   });
-  const exampleERC20 = await deploy('ExampleERC20', {
-    from: deployer,
-    args: arguments,
-    log: true,
-    waitConfirmations: waitBlockConfirmations,
-  });
 
+  // const exampleERC20 = await deploy('ExampleERC20', {
+  //   from: deployer,
+  //   args: arguments,
+  //   log: true,
+  //   waitConfirmations: waitBlockConfirmations,
+  // });
+
+  /*
   const QuestionAndAnswerContract = await ethers.getContract('QuestionAndAnswer');
   const ExampleERC20Contract = await ethers.getContract('ExampleERC20');
   const player1Signer = await ethers.getSigner(player1);
@@ -98,13 +100,15 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     player1,
     1
   );
+  */
 
   log('----------------------------------------------------');
   // Verify the deployment
-  if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
-    log('Verifying...');
-    await verify(questionAndAnswer.address, arguments);
-  }
+  // if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
+  //   log('Verifying...');
+  await verify(questionAndAnswer.address, arguments);
+  // await verify(exampleERC20.address, arguments);
+  // }
   log('----------------------------------------------------');
 };
 
