@@ -9,6 +9,7 @@ error QuestionAndAnswer__BountyTooLow();
 error QuestionAndAnswer__InvalidPriceMinimum();
 error QuestionAndAnswer__AllowanceTooLow();
 error QuestionAndAnswer__QuestionDoesNotExist();
+error QuestionAndAnswer__QuestionAlreadyAnswered();
 
 contract QuestionAndAnswer {
     event QuestionAsked(
@@ -40,12 +41,15 @@ contract QuestionAndAnswer {
     struct AnswererSettings {
         bool populated;
         uint256 priceMinimum;
+        uint256 withdrawableAmount;
         // TODO: uint256 questionCharacterLength;
         // TODO: acceptable categories
     }
     struct QuestionAnswerDetails {
         string question;
         string answer;
+        bool answered;
+        uint256 bounty;
         uint256 id;
     }
     mapping(address => AnswererSettings) public answererToSettings;
@@ -55,7 +59,7 @@ contract QuestionAndAnswer {
     // TODO: function withdraw
 
     function version() public pure returns (uint256) {
-        return 0;
+        return 1;
     }
 
     function askQuestion(
@@ -84,6 +88,8 @@ contract QuestionAndAnswer {
             memory newQuestionAnswerDetails = QuestionAnswerDetails({
                 question: question,
                 answer: "",
+                answered: false,
+                bounty: bounty,
                 id: 0
             });
         if (questionAnswerDetails.length != 0) {
@@ -115,10 +121,28 @@ contract QuestionAndAnswer {
         if (allQuestionAnswerDetails.length <= questionId) {
             revert QuestionAndAnswer__QuestionDoesNotExist();
         }
-        // questionerToAnswererToQAs[
-        //     questioner
-        // ][msg.sender]
+        if (allQuestionAnswerDetails[questionId].answered) {
+            revert QuestionAndAnswer__QuestionAlreadyAnswered();
+        }
         allQuestionAnswerDetails[questionId].answer = answer;
+        allQuestionAnswerDetails[questionId].answered = true;
+        uint256 bountyToCollect = allQuestionAnswerDetails[questionId].bounty;
+
+        emit QuestionAnswered(
+            questioner,
+            msg.sender,
+            questionId,
+            bountyToCollect
+        );
+
+        IERC20 paymentTokenERC20 = IERC20(PAYMENT_TOKEN_ADDRESS);
+        paymentTokenERC20.transferFrom(
+            questioner,
+            address(this),
+            bountyToCollect
+        );
+
+        answererToSettings[msg.sender].withdrawableAmount += bountyToCollect;
     }
 
     // Priced in native currency (MATIC).
@@ -129,7 +153,8 @@ contract QuestionAndAnswer {
 
         AnswererSettings memory senderAnswererSettings = AnswererSettings({
             populated: true,
-            priceMinimum: priceMinimum
+            priceMinimum: priceMinimum,
+            withdrawableAmount: 0
         });
         answererToSettings[msg.sender] = senderAnswererSettings;
     }
