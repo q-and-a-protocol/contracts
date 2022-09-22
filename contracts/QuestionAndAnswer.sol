@@ -10,6 +10,7 @@ error QuestionAndAnswer__InvalidPriceMinimum();
 error QuestionAndAnswer__AllowanceTooLow();
 error QuestionAndAnswer__QuestionDoesNotExist();
 error QuestionAndAnswer__QuestionAlreadyAnswered();
+error QuestionAndAnswer__NothingToWithdraw();
 
 contract QuestionAndAnswer {
     event QuestionAsked(
@@ -35,8 +36,12 @@ contract QuestionAndAnswer {
         uint256 indexed questionId
     );
 
+    event Withdraw(address indexed withdrawalBy, uint256 indexed amount);
+
     address constant PAYMENT_TOKEN_ADDRESS =
-        0xd77cFfca19aec21aca9F0E38743740EfD548b2A4;
+        0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
+    // hardhat: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+    // mumbai: 0xd77cFfca19aec21aca9F0E38743740EfD548b2A4
 
     struct AnswererSettings {
         bool populated;
@@ -58,8 +63,13 @@ contract QuestionAndAnswer {
 
     // TODO: function withdraw
 
-    function version() public pure returns (uint256) {
-        return 1;
+    function setAnswererSettingsPriceMinimum(uint256 priceMinimum) public {
+        if (priceMinimum <= 0) {
+            revert QuestionAndAnswer__InvalidPriceMinimum();
+        }
+
+        answererToSettings[msg.sender].populated = true;
+        answererToSettings[msg.sender].priceMinimum = priceMinimum;
     }
 
     function askQuestion(
@@ -145,18 +155,21 @@ contract QuestionAndAnswer {
         answererToSettings[msg.sender].withdrawableAmount += bountyToCollect;
     }
 
-    // Priced in native currency (MATIC).
-    function setAnswererSettings(uint256 priceMinimum) public {
-        if (priceMinimum <= 0) {
-            revert QuestionAndAnswer__InvalidPriceMinimum();
+    function answererWithdraw() public {
+        AnswererSettings storage answererSettings = answererToSettings[
+            msg.sender
+        ];
+        if (answererSettings.withdrawableAmount <= 0) {
+            revert QuestionAndAnswer__NothingToWithdraw();
         }
 
-        AnswererSettings memory senderAnswererSettings = AnswererSettings({
-            populated: true,
-            priceMinimum: priceMinimum,
-            withdrawableAmount: 0
-        });
-        answererToSettings[msg.sender] = senderAnswererSettings;
+        uint256 withdrawableAmount = answererSettings.withdrawableAmount;
+        IERC20 paymentTokenERC20 = IERC20(PAYMENT_TOKEN_ADDRESS);
+        paymentTokenERC20.transfer(msg.sender, withdrawableAmount);
+
+        answererSettings.withdrawableAmount = 0;
+
+        emit Withdraw(msg.sender, withdrawableAmount);
     }
 
     function getQuestionerToAnswererToQAs(
@@ -169,12 +182,16 @@ contract QuestionAndAnswer {
         returns (
             string memory,
             string memory,
+            bool,
+            uint256,
             uint256
         )
     {
         return (
             questionerToAnswererToQAs[questioner][answerer][index].question,
             questionerToAnswererToQAs[questioner][answerer][index].answer,
+            questionerToAnswererToQAs[questioner][answerer][index].answered,
+            questionerToAnswererToQAs[questioner][answerer][index].bounty,
             questionerToAnswererToQAs[questioner][answerer][index].id
         );
     }
