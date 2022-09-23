@@ -17,29 +17,35 @@ contract QuestionAndAnswer {
         address indexed questioner,
         address indexed answerer,
         uint256 indexed questionId,
-        uint256 bounty
+        uint256 bounty,
+        uint256 date,
+        string question
     );
     event QuestionAnswered(
         address indexed questioner,
         address indexed answerer,
         uint256 indexed questionId,
-        uint256 bounty
+        uint256 bounty,
+        uint256 date,
+        string answer
     );
     event QuestionCanceled(
         address indexed questioner,
         address indexed answerer,
-        uint256 indexed questionId
+        uint256 indexed questionId,
+        uint256 date
     );
     event QuestionExpired(
         address indexed questioner,
         address indexed answerer,
-        uint256 indexed questionId
+        uint256 indexed questionId,
+        uint256 date
     );
 
     event Withdraw(address indexed withdrawalBy, uint256 indexed amount);
 
     address constant PAYMENT_TOKEN_ADDRESS =
-        0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
+        0xd77cFfca19aec21aca9F0E38743740EfD548b2A4;
     // hardhat: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
     // mumbai: 0xd77cFfca19aec21aca9F0E38743740EfD548b2A4
 
@@ -47,8 +53,7 @@ contract QuestionAndAnswer {
         bool populated;
         uint256 priceMinimum;
         uint256 withdrawableAmount;
-        // TODO: uint256 questionCharacterLength;
-        // TODO: acceptable categories
+        string blurb;
     }
     struct QuestionAnswerDetails {
         string question;
@@ -70,6 +75,11 @@ contract QuestionAndAnswer {
 
         answererToSettings[msg.sender].populated = true;
         answererToSettings[msg.sender].priceMinimum = priceMinimum;
+    }
+
+    function setAnswererSettingsBlurb(string calldata blurb) public {
+        answererToSettings[msg.sender].populated = true;
+        answererToSettings[msg.sender].blurb = blurb;
     }
 
     function askQuestion(
@@ -115,7 +125,9 @@ contract QuestionAndAnswer {
             msg.sender,
             answerer,
             newQuestionAnswerDetails.id,
-            bounty
+            bounty,
+            block.timestamp,
+            question
         );
     }
 
@@ -142,7 +154,9 @@ contract QuestionAndAnswer {
             questioner,
             msg.sender,
             questionId,
-            bountyToCollect
+            bountyToCollect,
+            block.timestamp,
+            answer
         );
 
         IERC20 paymentTokenERC20 = IERC20(PAYMENT_TOKEN_ADDRESS);
