@@ -53,7 +53,7 @@ contract QuestionAndAnswer {
         bool populated;
         uint256 priceMinimum;
         uint256 withdrawableAmount;
-        string blurb;
+        string interests;
     }
     struct QuestionAnswerDetails {
         string question;
@@ -68,18 +68,17 @@ contract QuestionAndAnswer {
 
     // TODO: function withdraw
 
-    function setAnswererSettingsPriceMinimum(uint256 priceMinimum) public {
+    function setAnswererSettings(
+        uint256 priceMinimum,
+        string calldata interests
+    ) public {
         if (priceMinimum <= 0) {
             revert QuestionAndAnswer__InvalidPriceMinimum();
         }
 
         answererToSettings[msg.sender].populated = true;
         answererToSettings[msg.sender].priceMinimum = priceMinimum;
-    }
-
-    function setAnswererSettingsBlurb(string calldata blurb) public {
-        answererToSettings[msg.sender].populated = true;
-        answererToSettings[msg.sender].blurb = blurb;
+        answererToSettings[msg.sender].interests = interests;
     }
 
     function askQuestion(
