@@ -15,8 +15,8 @@ const networkConfig = {
 
 const developmentChains = ['hardhat', 'localhost'];
 const VERIFICATION_BLOCK_CONFIRMATIONS = 6;
-const frontEndContractsFile = '../question-and-answer-front-end/constants/networkMapping.json';
-const frontEndAbiLocation = '../question-and-answer-front-end/constants/';
+const frontEndContractsFile = '../question-and-answer-front-end/src/constants/networkMapping.json';
+const frontEndAbiLocation = '../question-and-answer-front-end/src/constants/';
 
 module.exports = {
   networkConfig,
