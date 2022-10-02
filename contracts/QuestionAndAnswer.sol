@@ -45,7 +45,7 @@ contract QuestionAndAnswer {
     event Withdraw(address indexed withdrawalBy, uint256 indexed amount);
 
     address constant PAYMENT_TOKEN_ADDRESS =
-        0xd77cFfca19aec21aca9F0E38743740EfD548b2A4;
+        0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
     // hardhat: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
     // mumbai: 0xd77cFfca19aec21aca9F0E38743740EfD548b2A4
 
