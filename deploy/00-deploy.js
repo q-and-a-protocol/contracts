@@ -100,16 +100,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   /////////// TESTING: answererToSettings(), askQuestion() ///////////////////
   ////////////////////////////////////////////////////////////////////////////
 
-  await QuestionAndAnswerContract.connect(player1Signer).setAnswererSettings(
-    ethers.utils.parseUnits('100'),
-    'Crypto and Freedom!'
-  );
-
-  const player1AnswererToSettings = await QuestionAndAnswerContract.connect(
-    player1Signer
-  ).answererToSettings(player1);
-  console.log(`Updated player1AnswererToSettings to: ${player1AnswererToSettings}`);
-
   const sampleBounty = ethers.utils.parseUnits('100');
   await ExampleERC20Contract.connect(player2Signer).myMint();
   await ExampleERC20Contract.connect(player2Signer).approve(
