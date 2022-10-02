@@ -90,35 +90,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     waitConfirmations: waitBlockConfirmations,
   });
 
-  /*
-  const QuestionAndAnswerContract = await ethers.getContract('QuestionAndAnswer');
-  const ExampleERC20Contract = await ethers.getContract('ExampleERC20');
-  const player1Signer = await ethers.getSigner(player1);
-  const player2Signer = await ethers.getSigner(player2);
-
-  ////////////////////////////////////////////////////////////////////////////
-  /////////// TESTING: answererToSettings(), askQuestion() ///////////////////
-  ////////////////////////////////////////////////////////////////////////////
-
-  console.log(
-    'Player 1: Can collect?: ',
-    await QuestionAndAnswerContract.answererToSettings(player1)
-  );
-
-  await QuestionAndAnswerContract.connect(player1Signer).answererWithdraw();
-
-  await printUSDCBalances(ExampleERC20Contract, [
-    questionAndAnswer.address,
-    deployer,
-    player1,
-    player2,
-  ]);
-
-  console.log(
-    'Player 1: Can collect?: ',
-    await QuestionAndAnswerContract.answererToSettings(player1)
-  );
-*/
   log('----------------------------------------------------');
   if (process.env.UPDATE_FRONT_END) {
     console.log('Writing to front end...');
