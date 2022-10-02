@@ -100,63 +100,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   /////////// TESTING: answererToSettings(), askQuestion() ///////////////////
   ////////////////////////////////////////////////////////////////////////////
 
-  const sampleBounty = ethers.utils.parseUnits('100');
-  await ExampleERC20Contract.connect(player2Signer).myMint();
-  await ExampleERC20Contract.connect(player2Signer).approve(
-    questionAndAnswer.address,
-    sampleBounty
-  );
-  const sampleQuestion = 'This is my question!';
-  const sampleAddress = player1;
-  await QuestionAndAnswerContract.connect(player2Signer).askQuestion(
-    sampleQuestion,
-    sampleAddress,
-    sampleBounty
-  );
-  await QuestionAndAnswerContract.connect(player2Signer).askQuestion(
-    sampleQuestion,
-    sampleAddress,
-    sampleBounty
-  );
-
-  await printUSDCBalances(ExampleERC20Contract, [
-    questionAndAnswer.address,
-    deployer,
-    player1,
-    player2,
-  ]);
-
-  await QuestionAndAnswerContract.connect(player1Signer).answerQuestion(
-    player2,
-    0,
-    'testing testing testing'
-  );
-
-  console.log(
-    'Stored: ',
-    await QuestionAndAnswerContract.connect(player2Signer).getQuestionerToAnswererToQAs(
-      player2,
-      sampleAddress,
-      0
-    )
-  );
-
-  console.log(
-    'Stored: ',
-    await QuestionAndAnswerContract.connect(player2Signer).getQuestionerToAnswererToQAs(
-      player2,
-      sampleAddress,
-      1
-    )
-  );
-
-  await printUSDCBalances(ExampleERC20Contract, [
-    questionAndAnswer.address,
-    deployer,
-    player1,
-    player2,
-  ]);
-
   console.log(
     'Player 1: Can collect?: ',
     await QuestionAndAnswerContract.answererToSettings(player1)

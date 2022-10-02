@@ -124,10 +124,6 @@ const { developmentChains } = require('../helper-hardhat-config');
             )[2]
           ).to.not.equal(true);
 
-          expect(await exampleERC20.balanceOf(questionAndAnswer.address)).to.equal(0);
-          expect(await exampleERC20.balanceOf(asker.address)).to.equal(mintedAmount);
-          expect(await exampleERC20.balanceOf(answerer.address)).to.equal(0);
-
           await questionAndAnswer.connect(answerer).answerQuestion(asker.address, 0, answer);
 
           expect(
@@ -151,7 +147,47 @@ const { developmentChains } = require('../helper-hardhat-config');
           ).to.equal(true);
         });
 
-        it('should be possible to see earnings and withdraw them', async function () {});
+        it('should be possible to see earnings and withdraw them', async function () {
+          const { questionAndAnswer, exampleERC20, player1, player2 } = await loadFixture(
+            deployMainFixture
+          );
+
+          const bounty = ethers.utils.parseUnits('100');
+          const question = 'Hi, how are you?';
+          const answer = 'Good! And you?';
+          const asker = player2;
+          const answerer = player1;
+
+          const mintedAmount = ethers.utils.parseUnits('100');
+          await exampleERC20.connect(asker).myMint();
+          await exampleERC20.connect(asker).approve(questionAndAnswer.address, bounty);
+
+          await questionAndAnswer.connect(asker).askQuestion(question, answerer.address, bounty);
+
+          expect(await exampleERC20.balanceOf(questionAndAnswer.address)).to.equal(0);
+          expect(await exampleERC20.balanceOf(asker.address)).to.equal(mintedAmount);
+          expect(await exampleERC20.balanceOf(answerer.address)).to.equal(0);
+
+          expect(
+            (await questionAndAnswer.answererToSettings(answerer.address)).withdrawableAmount
+          ).to.equal(0);
+
+          await questionAndAnswer.connect(answerer).answerQuestion(asker.address, 0, answer);
+
+          expect(await exampleERC20.balanceOf(questionAndAnswer.address)).to.equal(bounty);
+          expect(await exampleERC20.balanceOf(asker.address)).to.equal(0);
+          expect(await exampleERC20.balanceOf(answerer.address)).to.equal(0);
+
+          expect(
+            (await questionAndAnswer.answererToSettings(answerer.address)).withdrawableAmount
+          ).to.equal(bounty);
+
+          await questionAndAnswer.connect(answerer).answererWithdraw();
+
+          expect(await exampleERC20.balanceOf(questionAndAnswer.address)).to.equal(0);
+          expect(await exampleERC20.balanceOf(asker.address)).to.equal(0);
+          expect(await exampleERC20.balanceOf(answerer.address)).to.equal(bounty);
+        });
       });
 
       describe('Withdrawals', function () {
