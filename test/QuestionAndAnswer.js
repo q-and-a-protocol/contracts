@@ -94,6 +94,7 @@ const { developmentChains } = require('../helper-hardhat-config');
 
           const bounty = ethers.utils.parseUnits('100');
           const question = 'Hi, how are you?';
+          const answer = 'Good! And you?';
           const asker = player2;
           const answerer = player1;
 
@@ -103,43 +104,54 @@ const { developmentChains } = require('../helper-hardhat-config');
 
           await questionAndAnswer.connect(asker).askQuestion(question, answerer.address, bounty);
 
+          // Testing "answered" property
+          expect(
+            (
+              await questionAndAnswer.getQuestionerToAnswererToQAs(
+                asker.address,
+                answerer.address,
+                0
+              )
+            )[1]
+          ).to.not.equal(answer);
+          expect(
+            (
+              await questionAndAnswer.getQuestionerToAnswererToQAs(
+                asker.address,
+                answerer.address,
+                0
+              )
+            )[2]
+          ).to.not.equal(true);
+
           expect(await exampleERC20.balanceOf(questionAndAnswer.address)).to.equal(0);
           expect(await exampleERC20.balanceOf(asker.address)).to.equal(mintedAmount);
           expect(await exampleERC20.balanceOf(answerer.address)).to.equal(0);
 
-          /*
-          await QuestionAndAnswerContract.connect(player1Signer).answerQuestion(
-            player2,
-            0,
-            'testing testing testing'
-          );
+          await questionAndAnswer.connect(answerer).answerQuestion(asker.address, 0, answer);
 
-          console.log(
-            'Stored: ',
-            await QuestionAndAnswerContract.connect(player2Signer).getQuestionerToAnswererToQAs(
-              player2,
-              sampleAddress,
-              0
-            )
-          );
+          expect(
+            (
+              await questionAndAnswer.getQuestionerToAnswererToQAs(
+                asker.address,
+                answerer.address,
+                0
+              )
+            )[1]
+          ).to.equal(answer);
 
-          console.log(
-            'Stored: ',
-            await QuestionAndAnswerContract.connect(player2Signer).getQuestionerToAnswererToQAs(
-              player2,
-              sampleAddress,
-              1
-            )
-          );
-
-          await printUSDCBalances(ExampleERC20Contract, [
-            questionAndAnswer.address,
-            deployer,
-            player1,
-            player2,
-          ]);
-          */
+          expect(
+            (
+              await questionAndAnswer.getQuestionerToAnswererToQAs(
+                asker.address,
+                answerer.address,
+                0
+              )
+            )[2]
+          ).to.equal(true);
         });
+
+        it('should be possible to see earnings and withdraw them', async function () {});
       });
 
       describe('Withdrawals', function () {
