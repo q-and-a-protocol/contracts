@@ -74,18 +74,21 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   ////////////////////////////////////////////////////////////////////////////
   ///////////////////////// SET UP CONTRACT, SIGNERS /////////////////////////
   ////////////////////////////////////////////////////////////////////////////
-
-  const arguments = [];
-  const questionAndAnswer = await deploy('QuestionAndAnswer', {
+  const arguments1 = [];
+  const exampleERC20 = await deploy('ExampleERC20', {
     from: deployer,
-    args: arguments,
+    args: arguments1,
     log: true,
     waitConfirmations: waitBlockConfirmations,
   });
 
-  const exampleERC20 = await deploy('ExampleERC20', {
+  const arguments2 =
+    network.name === 'mumbai'
+      ? [0xd77cffca19aec21aca9f0e38743740efd548b2a4]
+      : [exampleERC20.address];
+  const questionAndAnswer = await deploy('QuestionAndAnswer', {
     from: deployer,
-    args: arguments,
+    args: arguments2,
     log: true,
     waitConfirmations: waitBlockConfirmations,
   });

@@ -12,11 +12,11 @@ const { developmentChains } = require('../helper-hardhat-config');
         // Contracts are deployed using the first signer/account by default
         const [deployer, player1, player2] = await ethers.getSigners();
 
-        const QuestionAndAnswer = await ethers.getContractFactory('QuestionAndAnswer');
-        const questionAndAnswer = await QuestionAndAnswer.deploy();
-
         const ExampleERC20 = await ethers.getContractFactory('ExampleERC20');
         const exampleERC20 = await ExampleERC20.deploy();
+
+        const QuestionAndAnswer = await ethers.getContractFactory('QuestionAndAnswer');
+        const questionAndAnswer = await QuestionAndAnswer.deploy(exampleERC20.address);
 
         return { questionAndAnswer, exampleERC20, deployer, player1, player2 };
       }

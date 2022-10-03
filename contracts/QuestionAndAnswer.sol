@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // TODO: error QuestionAndAnswer__QuestionTooLong();
@@ -41,13 +40,10 @@ contract QuestionAndAnswer {
         uint256 indexed questionId,
         uint256 date
     );
-
     event Withdraw(address indexed withdrawalBy, uint256 indexed amount);
 
-    address constant PAYMENT_TOKEN_ADDRESS =
-        0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
-    // hardhat: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
-    // mumbai: 0xd77cFfca19aec21aca9F0E38743740EfD548b2A4
+    // For now, this is the only accepted currency.
+    address immutable i_USDC_ADDRESS;
 
     struct AnswererSettings {
         bool populated;
@@ -66,7 +62,9 @@ contract QuestionAndAnswer {
     mapping(address => mapping(address => QuestionAnswerDetails[]))
         private questionerToAnswererToQAs;
 
-    // TODO: function withdraw
+    constructor(address USDCAddress) {
+        i_USDC_ADDRESS = USDCAddress;
+    }
 
     function setAnswererSettings(
         uint256 priceMinimum,
@@ -94,7 +92,7 @@ contract QuestionAndAnswer {
             revert QuestionAndAnswer__BountyTooLow();
         }
 
-        IERC20 paymentTokenERC20 = IERC20(PAYMENT_TOKEN_ADDRESS);
+        IERC20 paymentTokenERC20 = IERC20(i_USDC_ADDRESS);
         if (paymentTokenERC20.allowance(msg.sender, address(this)) < bounty) {
             revert QuestionAndAnswer__AllowanceTooLow();
         }
@@ -158,7 +156,7 @@ contract QuestionAndAnswer {
             answer
         );
 
-        IERC20 paymentTokenERC20 = IERC20(PAYMENT_TOKEN_ADDRESS);
+        IERC20 paymentTokenERC20 = IERC20(i_USDC_ADDRESS);
         paymentTokenERC20.transferFrom(
             questioner,
             address(this),
@@ -177,7 +175,7 @@ contract QuestionAndAnswer {
         }
 
         uint256 withdrawableAmount = answererSettings.withdrawableAmount;
-        IERC20 paymentTokenERC20 = IERC20(PAYMENT_TOKEN_ADDRESS);
+        IERC20 paymentTokenERC20 = IERC20(i_USDC_ADDRESS);
         paymentTokenERC20.transfer(msg.sender, withdrawableAmount);
 
         answererSettings.withdrawableAmount = 0;
