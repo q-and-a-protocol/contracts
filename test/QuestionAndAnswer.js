@@ -4,7 +4,6 @@ const { expect } = require('chai');
 const { developmentChains } = require('../helper-hardhat-config');
 
 // TODO:
-// fix tests
 // add test with valid expiry
 // add test with invalid expiry
 // add test answer in time
@@ -111,12 +110,17 @@ const { developmentChains } = require('../helper-hardhat-config');
           const answer = 'Good! And you?';
           const asker = player2;
           const answerer = player1;
+          const date = new Date();
+          date.setHours(date.getHours() + 4);
+          const validExpiryDate = Math.floor(date.getTime() / 1000);
 
           const mintedAmount = ethers.utils.parseUnits('100');
           await exampleERC20.connect(asker).myMint();
           await exampleERC20.connect(asker).approve(questionAndAnswer.address, bounty);
 
-          await questionAndAnswer.connect(asker).askQuestion(question, answerer.address, bounty);
+          await questionAndAnswer
+            .connect(asker)
+            .askQuestion(question, answerer.address, bounty, validExpiryDate);
 
           // Testing "answered" property
           expect(
@@ -171,12 +175,17 @@ const { developmentChains } = require('../helper-hardhat-config');
           const answer = 'Good! And you?';
           const asker = player2;
           const answerer = player1;
+          const date = new Date();
+          date.setHours(date.getHours() + 4);
+          const validExpiryDate = Math.floor(date.getTime() / 1000);
 
           const mintedAmount = ethers.utils.parseUnits('100');
           await exampleERC20.connect(asker).myMint();
           await exampleERC20.connect(asker).approve(questionAndAnswer.address, bounty);
 
-          await questionAndAnswer.connect(asker).askQuestion(question, answerer.address, bounty);
+          await questionAndAnswer
+            .connect(asker)
+            .askQuestion(question, answerer.address, bounty, validExpiryDate);
 
           expect(await exampleERC20.balanceOf(questionAndAnswer.address)).to.equal(0);
           expect(await exampleERC20.balanceOf(asker.address)).to.equal(mintedAmount);
