@@ -216,6 +216,64 @@ const { developmentChains } = require('../helper-hardhat-config');
             .to.be.reverted;
         });
 
+        it('should allow canceling questions', async function () {
+          const { questionAndAnswer, exampleERC20, player1, player2 } = await loadFixture(
+            deployMainFixture
+          );
+
+          const bounty = ethers.utils.parseUnits('100');
+          const question = 'Hi, how are you?';
+          const answer = 'Good! And you?';
+          const asker = player2;
+          const answerer = player1;
+          const date = new Date();
+          date.setMinutes(date.getMinutes() + 10);
+          const validExpiryDate = Math.floor(date.getTime() / 1000);
+
+          const mintedAmount = ethers.utils.parseUnits('100');
+          await exampleERC20.connect(asker).myMint();
+          await exampleERC20.connect(asker).approve(questionAndAnswer.address, bounty);
+
+          questionAndAnswer
+            .connect(asker)
+            .askQuestion(question, answerer.address, bounty, validExpiryDate);
+
+          await expect(questionAndAnswer.connect(asker).cancelQuestion(answerer.address, 0)).to.not
+            .be.reverted;
+        });
+
+        it('should not allow canceling questions close to deadline', async function () {
+          const { questionAndAnswer, exampleERC20, player1, player2 } = await loadFixture(
+            deployMainFixture
+          );
+
+          const bounty = ethers.utils.parseUnits('100');
+          const question = 'Hi, how are you?';
+          const answer = 'Good! And you?';
+          const asker = player2;
+          const answerer = player1;
+          const date = new Date();
+          date.setMinutes(date.getMinutes() + 10);
+          const validExpiryDate = Math.floor(date.getTime() / 1000);
+
+          const mintedAmount = ethers.utils.parseUnits('100');
+          await exampleERC20.connect(asker).myMint();
+          await exampleERC20.connect(asker).approve(questionAndAnswer.address, bounty);
+
+          questionAndAnswer
+            .connect(asker)
+            .askQuestion(question, answerer.address, bounty, validExpiryDate);
+
+          const blockNumBefore = await ethers.provider.getBlockNumber();
+          const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+          const timestampBefore = blockBefore.timestamp;
+          const sixMinutes = timestampBefore + 6 * 60;
+          await ethers.provider.send('evm_mine', [sixMinutes]);
+
+          await expect(questionAndAnswer.connect(asker).cancelQuestion(answerer.address, 0)).to.be
+            .reverted;
+        });
+
         it('should be possible to see earnings and withdraw them', async function () {
           const { questionAndAnswer, exampleERC20, player1, player2 } = await loadFixture(
             deployMainFixture

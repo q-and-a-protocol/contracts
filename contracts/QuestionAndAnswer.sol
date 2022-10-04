@@ -12,6 +12,7 @@ error QuestionAndAnswer__InvalidExpiry();
 error QuestionAndAnswer__QuestionDoesNotExist();
 error QuestionAndAnswer__QuestionAlreadyAnswered();
 error QuestionAndAnswer__QuestionHasExpired();
+error QuestionAndAnswer__CannotCancelQuestion();
 error QuestionAndAnswer__NothingToWithdraw();
 
 contract QuestionAndAnswer {
@@ -33,12 +34,6 @@ contract QuestionAndAnswer {
         string answer
     );
     event QuestionCanceled(
-        address indexed questioner,
-        address indexed answerer,
-        uint256 indexed questionId,
-        uint256 date
-    );
-    event QuestionExpired(
         address indexed questioner,
         address indexed answerer,
         uint256 indexed questionId,
@@ -182,6 +177,39 @@ contract QuestionAndAnswer {
         );
 
         answererToSettings[msg.sender].withdrawableAmount += bountyToCollect;
+    }
+
+    function cancelQuestion(address answerer, uint256 questionId) public {
+        QuestionAnswerDetails[]
+            storage allQuestionAnswerDetails = questionerToAnswererToQAs[
+                msg.sender
+            ][answerer];
+        if (allQuestionAnswerDetails.length <= questionId) {
+            revert QuestionAndAnswer__QuestionDoesNotExist();
+        }
+        if (allQuestionAnswerDetails[questionId].answered) {
+            revert QuestionAndAnswer__QuestionAlreadyAnswered();
+        }
+        if (
+            allQuestionAnswerDetails[questionId].expiryDate <= block.timestamp
+        ) {
+            revert QuestionAndAnswer__QuestionHasExpired();
+        }
+        if (
+            allQuestionAnswerDetails[questionId].expiryDate <=
+            block.timestamp + 5 minutes
+        ) {
+            revert QuestionAndAnswer__CannotCancelQuestion();
+        }
+
+        allQuestionAnswerDetails[questionId].expiryDate = block.timestamp - 1;
+
+        emit QuestionCanceled(
+            msg.sender,
+            answerer,
+            questionId,
+            block.timestamp
+        );
     }
 
     function answererWithdraw() public {
