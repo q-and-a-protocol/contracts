@@ -84,7 +84,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   const arguments2 =
     network.name === 'mumbai'
-      ? [0xd77cffca19aec21aca9f0e38743740efd548b2a4]
+      ? [ethers.utils.getAddress('0xd77cffca19aec21aca9f0e38743740efd548b2a4')]
       : [exampleERC20.address];
   const questionAndAnswer = await deploy('QuestionAndAnswer', {
     from: deployer,
@@ -108,8 +108,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     (process.env.ETHERSCAN_API_KEY || process.env.POLYGONSCAN_API_KEY)
   ) {
     log('Verifying the deployment...');
-    await verify(questionAndAnswer.address, arguments);
-    await verify(exampleERC20.address, arguments);
+    await verify(exampleERC20.address, arguments1);
+    await verify(questionAndAnswer.address, arguments2);
   }
   log('----------------------------------------------------');
 };
