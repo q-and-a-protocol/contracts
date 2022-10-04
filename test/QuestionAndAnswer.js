@@ -3,12 +3,6 @@ const { loadFixture } = require('@nomicfoundation/hardhat-network-helpers');
 const { expect } = require('chai');
 const { developmentChains } = require('../helper-hardhat-config');
 
-// TODO:
-// add test with valid expiry
-// add test with invalid expiry
-// add test answer in time
-// add test answer when out of time
-
 !developmentChains.includes(network.name)
   ? describe.skip
   : describe('QuestionAndAnswer', function () {
@@ -163,6 +157,63 @@ const { developmentChains } = require('../helper-hardhat-config');
               )
             )[2]
           ).to.equal(true);
+        });
+
+        it('should not allow questions with an invalid expiry', async function () {
+          const { questionAndAnswer, exampleERC20, player1, player2 } = await loadFixture(
+            deployMainFixture
+          );
+
+          const bounty = ethers.utils.parseUnits('100');
+          const question = 'Hi, how are you?';
+          const answer = 'Good! And you?';
+          const asker = player2;
+          const answerer = player1;
+          const date = new Date();
+          date.setHours(date.getHours() - 4);
+          const invalidExpiryDate = Math.floor(date.getTime() / 1000);
+
+          const mintedAmount = ethers.utils.parseUnits('100');
+          await exampleERC20.connect(asker).myMint();
+          await exampleERC20.connect(asker).approve(questionAndAnswer.address, bounty);
+
+          await expect(
+            questionAndAnswer
+              .connect(asker)
+              .askQuestion(question, answerer.address, bounty, invalidExpiryDate)
+          ).to.be.reverted;
+        });
+
+        it('should not allow answering questions which have expired', async function () {
+          const { questionAndAnswer, exampleERC20, player1, player2 } = await loadFixture(
+            deployMainFixture
+          );
+
+          const bounty = ethers.utils.parseUnits('100');
+          const question = 'Hi, how are you?';
+          const answer = 'Good! And you?';
+          const asker = player2;
+          const answerer = player1;
+          const date = new Date();
+          date.setHours(date.getHours() + 4);
+          const validExpiryDate = Math.floor(date.getTime() / 1000);
+
+          const mintedAmount = ethers.utils.parseUnits('100');
+          await exampleERC20.connect(asker).myMint();
+          await exampleERC20.connect(asker).approve(questionAndAnswer.address, bounty);
+
+          questionAndAnswer
+            .connect(asker)
+            .askQuestion(question, answerer.address, bounty, validExpiryDate);
+
+          const blockNumBefore = await ethers.provider.getBlockNumber();
+          const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+          const timestampBefore = blockBefore.timestamp;
+          const oneDay = timestampBefore + 24 * 60 * 60;
+          await ethers.provider.send('evm_mine', [oneDay]);
+
+          await expect(questionAndAnswer.connect(answerer).answerQuestion(asker.address, 0, answer))
+            .to.be.reverted;
         });
 
         it('should be possible to see earnings and withdraw them', async function () {
