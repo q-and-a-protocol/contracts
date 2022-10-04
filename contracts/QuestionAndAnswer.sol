@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // TODO: error QuestionAndAnswer__QuestionTooLong();
 error QuestionAndAnswer__BountyTooLow();
 error QuestionAndAnswer__InvalidPriceMinimum();
 error QuestionAndAnswer__AllowanceTooLow();
+error QuestionAndAnswer__InvalidExpiry();
 error QuestionAndAnswer__QuestionDoesNotExist();
 error QuestionAndAnswer__QuestionAlreadyAnswered();
+error QuestionAndAnswer__QuestionHasExpired();
 error QuestionAndAnswer__NothingToWithdraw();
 
 contract QuestionAndAnswer {
@@ -18,7 +21,8 @@ contract QuestionAndAnswer {
         uint256 indexed questionId,
         uint256 bounty,
         uint256 date,
-        string question
+        string question,
+        uint256 expiryDate
     );
     event QuestionAnswered(
         address indexed questioner,
@@ -57,6 +61,7 @@ contract QuestionAndAnswer {
         bool answered;
         uint256 bounty;
         uint256 id;
+        uint256 expiryDate;
     }
     mapping(address => AnswererSettings) public answererToSettings;
     mapping(address => mapping(address => QuestionAnswerDetails[]))
@@ -82,7 +87,8 @@ contract QuestionAndAnswer {
     function askQuestion(
         string calldata question,
         address answerer,
-        uint256 bounty
+        uint256 bounty,
+        uint256 expiryDate
     ) public {
         AnswererSettings memory answererSettings = answererToSettings[answerer];
 
@@ -97,6 +103,10 @@ contract QuestionAndAnswer {
             revert QuestionAndAnswer__AllowanceTooLow();
         }
 
+        if (expiryDate <= block.timestamp) {
+            revert QuestionAndAnswer__InvalidExpiry();
+        }
+
         QuestionAnswerDetails[]
             memory questionAnswerDetails = questionerToAnswererToQAs[
                 msg.sender
@@ -107,7 +117,8 @@ contract QuestionAndAnswer {
                 answer: "",
                 answered: false,
                 bounty: bounty,
-                id: 0
+                id: 0,
+                expiryDate: expiryDate
             });
         if (questionAnswerDetails.length != 0) {
             newQuestionAnswerDetails.id =
@@ -124,7 +135,8 @@ contract QuestionAndAnswer {
             newQuestionAnswerDetails.id,
             bounty,
             block.timestamp,
-            question
+            question,
+            expiryDate
         );
     }
 
@@ -143,6 +155,12 @@ contract QuestionAndAnswer {
         if (allQuestionAnswerDetails[questionId].answered) {
             revert QuestionAndAnswer__QuestionAlreadyAnswered();
         }
+        if (
+            allQuestionAnswerDetails[questionId].expiryDate <= block.timestamp
+        ) {
+            revert QuestionAndAnswer__QuestionHasExpired();
+        }
+
         allQuestionAnswerDetails[questionId].answer = answer;
         allQuestionAnswerDetails[questionId].answered = true;
         uint256 bountyToCollect = allQuestionAnswerDetails[questionId].bounty;
@@ -195,6 +213,7 @@ contract QuestionAndAnswer {
             string memory,
             bool,
             uint256,
+            uint256,
             uint256
         )
     {
@@ -203,7 +222,8 @@ contract QuestionAndAnswer {
             questionerToAnswererToQAs[questioner][answerer][index].answer,
             questionerToAnswererToQAs[questioner][answerer][index].answered,
             questionerToAnswererToQAs[questioner][answerer][index].bounty,
-            questionerToAnswererToQAs[questioner][answerer][index].id
+            questionerToAnswererToQAs[questioner][answerer][index].id,
+            questionerToAnswererToQAs[questioner][answerer][index].expiryDate
         );
     }
 }

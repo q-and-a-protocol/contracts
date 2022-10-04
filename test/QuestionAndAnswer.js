@@ -3,6 +3,13 @@ const { loadFixture } = require('@nomicfoundation/hardhat-network-helpers');
 const { expect } = require('chai');
 const { developmentChains } = require('../helper-hardhat-config');
 
+// TODO:
+// fix tests
+// add test with valid expiry
+// add test with invalid expiry
+// add test answer in time
+// add test answer when out of time
+
 !developmentChains.includes(network.name)
   ? describe.skip
   : describe('QuestionAndAnswer', function () {
@@ -54,6 +61,9 @@ const { developmentChains } = require('../helper-hardhat-config');
           const question2 = 'How is the weather there?';
           const asker = player2;
           const answerer = player1;
+          const date = new Date();
+          date.setHours(date.getHours() + 4);
+          const validExpiryDate = Math.floor(date.getTime() / 1000);
 
           const mintedAmount = ethers.utils.parseUnits('100');
           await exampleERC20.connect(asker).myMint();
@@ -63,8 +73,12 @@ const { developmentChains } = require('../helper-hardhat-config');
             mintedAmount
           );
 
-          await questionAndAnswer.connect(asker).askQuestion(question1, answerer.address, bounty);
-          await questionAndAnswer.connect(asker).askQuestion(question2, answerer.address, bounty);
+          await questionAndAnswer
+            .connect(asker)
+            .askQuestion(question1, answerer.address, bounty, validExpiryDate);
+          await questionAndAnswer
+            .connect(asker)
+            .askQuestion(question2, answerer.address, bounty, validExpiryDate);
 
           expect(
             (
