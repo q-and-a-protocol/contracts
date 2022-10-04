@@ -70,7 +70,7 @@ contract QuestionAndAnswer {
         uint256 priceMinimum,
         string calldata interests
     ) public {
-        if (priceMinimum <= 0) {
+        if (priceMinimum < 0) {
             revert QuestionAndAnswer__InvalidPriceMinimum();
         }
 
