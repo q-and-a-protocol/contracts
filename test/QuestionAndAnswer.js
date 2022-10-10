@@ -322,11 +322,55 @@ const { developmentChains } = require('../helper-hardhat-config');
         });
       });
 
-      // describe('Withdrawals', function () {
-      //   describe('Validations', function () {});
+      describe('Withdrawals', function () {
+        it('should be possible to emergency withdraw, only for deployer', async function () {
+          const { questionAndAnswer, exampleERC20, deployer, player1, player2 } = await loadFixture(
+            deployMainFixture
+          );
 
-      //   describe('Events', function () {});
+          const bounty = ethers.utils.parseUnits('100');
+          const question = 'Hi, how are you?';
+          const answer = 'Good! And you?';
+          const asker = player2;
+          const answerer = player1;
+          const date = new Date();
+          date.setHours(date.getHours() + 4);
+          const validExpiryDate = Math.floor(date.getTime() / 1000);
 
-      //   describe('Transfers', function () {});
-      // });
+          const mintedAmount = ethers.utils.parseUnits('100');
+          await exampleERC20.connect(asker).myMint();
+          await exampleERC20.connect(asker).approve(questionAndAnswer.address, bounty);
+
+          await questionAndAnswer
+            .connect(asker)
+            .askQuestion(question, answerer.address, bounty, validExpiryDate);
+
+          expect(await exampleERC20.balanceOf(questionAndAnswer.address)).to.equal(0);
+          expect(await exampleERC20.balanceOf(asker.address)).to.equal(mintedAmount);
+          expect(await exampleERC20.balanceOf(answerer.address)).to.equal(0);
+
+          await questionAndAnswer.connect(answerer).answerQuestion(asker.address, 0, answer);
+
+          expect(await exampleERC20.balanceOf(questionAndAnswer.address)).to.equal(bounty);
+          expect(await exampleERC20.balanceOf(asker.address)).to.equal(0);
+          expect(await exampleERC20.balanceOf(answerer.address)).to.equal(0);
+
+          await expect(questionAndAnswer.connect(answerer).emergencyWithdraw()).to.be.reverted;
+
+          expect(await exampleERC20.balanceOf(questionAndAnswer.address)).to.equal(bounty);
+          expect(await exampleERC20.balanceOf(deployer.address)).to.equal(0);
+          expect(await exampleERC20.balanceOf(asker.address)).to.equal(0);
+          expect(await exampleERC20.balanceOf(answerer.address)).to.equal(0);
+
+          await expect(questionAndAnswer.connect(deployer).emergencyWithdraw()).to.not.be.reverted;
+
+          expect(await exampleERC20.balanceOf(questionAndAnswer.address)).to.equal(0);
+          expect(await exampleERC20.balanceOf(deployer.address)).to.equal(bounty);
+          expect(await exampleERC20.balanceOf(asker.address)).to.equal(0);
+          expect(await exampleERC20.balanceOf(answerer.address)).to.equal(0);
+        });
+        //   describe('Validations', function () {});
+        //   describe('Events', function () {});
+        //   describe('Transfers', function () {});
+      });
     });

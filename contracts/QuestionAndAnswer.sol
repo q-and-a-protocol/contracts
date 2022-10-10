@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-// TODO: error QuestionAndAnswer__QuestionTooLong();
 error QuestionAndAnswer__BountyTooLow();
 error QuestionAndAnswer__InvalidPriceMinimum();
 error QuestionAndAnswer__AllowanceTooLow();
@@ -15,7 +14,7 @@ error QuestionAndAnswer__QuestionHasExpired();
 error QuestionAndAnswer__CannotCancelQuestion();
 error QuestionAndAnswer__NothingToWithdraw();
 
-contract QuestionAndAnswer {
+contract QuestionAndAnswer is Ownable {
     event QuestionAsked(
         address indexed questioner,
         address indexed answerer,
@@ -40,6 +39,10 @@ contract QuestionAndAnswer {
         uint256 date
     );
     event Withdraw(address indexed withdrawalBy, uint256 indexed amount);
+    event EmergencyWithdraw(
+        address indexed withdrawalBy,
+        uint256 indexed amount
+    );
 
     // For now, this is the only accepted currency.
     address immutable i_USDC_ADDRESS;
@@ -208,7 +211,7 @@ contract QuestionAndAnswer {
             msg.sender,
             answerer,
             questionId,
-            block.timestamp
+            block.timestamp - 1
         );
     }
 
@@ -222,11 +225,21 @@ contract QuestionAndAnswer {
 
         uint256 withdrawableAmount = answererSettings.withdrawableAmount;
         IERC20 paymentTokenERC20 = IERC20(i_USDC_ADDRESS);
-        paymentTokenERC20.transfer(msg.sender, withdrawableAmount);
 
         answererSettings.withdrawableAmount = 0;
 
         emit Withdraw(msg.sender, withdrawableAmount);
+
+        paymentTokenERC20.transfer(msg.sender, withdrawableAmount);
+    }
+
+    function emergencyWithdraw() public onlyOwner {
+        IERC20 paymentTokenERC20 = IERC20(i_USDC_ADDRESS);
+        uint256 withdrawableAmount = paymentTokenERC20.balanceOf(address(this));
+
+        emit EmergencyWithdraw(msg.sender, withdrawableAmount);
+
+        paymentTokenERC20.transfer(msg.sender, withdrawableAmount);
     }
 
     function getQuestionerToAnswererToQAs(
