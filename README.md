@@ -1,21 +1,17 @@
-# Overview
+# Q&A Protocol
 
-This application consists of 3 Github repositories:
+Makes it possible to message people and pay them to reply.
 
-1. [Front-End](https://github.com/ArshaanB/question-and-answer-front-end)
-2. [Smart Contracts](https://github.com/ArshaanB/question-and-answer-contracts)
-3. [The Graph Indexing](https://github.com/ArshaanB/question-and-answer-contracts-the-graph)
+Visit [Q&A Protocol](https://www.qandaprotocol.com/) by clicking here.
 
-# Sample Hardhat Project
+## What is this repository?
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This repository contains the Solidity code for the smart contract which is deployed on Polygon.
 
-Try running some of the following tasks:
+## Usage
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
-```
+The product is currently in Beta and if you'd like access or have any questions or suggestions please contact me on Twitter (https://twitter.com/arshaan_b).
+
+## Support
+
+We're lucky to be working closely with the following organizations: Polygon, Antler.
